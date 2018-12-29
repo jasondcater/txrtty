@@ -11,7 +11,7 @@ The rtty broadcast of the baudot codes require 1 start bit and two stop bits. Wh
 These new bytes map nicely to regular integer data types. The mapping to letters/symbols are based upon the "C" programming character set. These DO NOT map to the ascii table (you are going to have to do that yourself).
 
 This first table is the standard baudot table mapping: !!! In LSB
-
+```
 00000      '\0'      00000     '\0'
 00100      ' '       00100     ' '
 10111      '0'       11101     'Q'
@@ -44,9 +44,10 @@ This first table is the standard baudot table mapping: !!! In LSB
 00010      '\n''     0100      '\n
 11011      STF       11011     STF
 11111      STL       11111     STL
+```
 
 This second table is the baudot code with the start bit and two ending bits plus the decimal conversion from the newly created byte.
-
+```
 00000011, 3    '\0'   00000011, 3      '\0'
 00010011, 19   ' '    00010011, 19     ' '
 01011111, 95   '1'    01110111, 119    'Q'
@@ -79,9 +80,9 @@ This second table is the baudot code with the start bit and two ending bits plus
 00001011, 11   '\n'   00100011, 35     '\n'
 01101111, 111  STF    01101111, 111    STF
 01111111, 127  STL    01111111, 127    STL
-
+```
 This third table is the baudot code with the start bit, one ending bit and one parity bit. Parity is set to odd.
-
+```
 00000010, 2   '\0'    00000010, 2      '\0'
 00010011, 19  ' '     00010011, 19     ' '
 01011110, 94  '1'     01110110, 118    'Q'
@@ -114,10 +115,10 @@ This third table is the baudot code with the start bit, one ending bit and one p
 00001011, 11  '\n'    00100011, 35     '\n'
 01101110, 110  STF     01101110, 110    STF
 01111111, 127  STL     01111111, 127    STL
-
+```
 Example (my call sign):
 SPCSTN-KJ6ZRF, SPACE STATION - KJ6ZRF
-
+```
 01111111, 127    STL
 01010010, 82     'S'
 00110111, 55     'P'
@@ -137,7 +138,7 @@ SPCSTN-KJ6ZRF, SPACE STATION - KJ6ZRF
 00101010, 42     'R'
 01011011, 91     'F'
 00100011, 35     '\n'
-
+```
 ## Old notes
 
 gcc -O2 -fomit-frame-pointer -ffast-math -s -lm  rtty.c audio.c dsp.c dpll.c serial.c baudot.c -o rtty
