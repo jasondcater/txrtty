@@ -1,141 +1,115 @@
-#include "/usr/include/pthread.h"
 #include "./common.h"
+
+#include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-// 0 == false, 1 == true
-int running = 0;
-int has_data = 0;// Lets the system know there is data ready for transmission.
+int running = 1;
+int has_data = 0; // Lets the system know there is data ready for transmission.
 
 // Commands
 char cmd[BUFSIZ];
 const char quit[] = "quit";
 const char help[] = "help";
 
-// Various
-char  *p;   // Newline pointer;
-int *msg_buf;   // Message buffer, gets filled by baudot();
-double *trs_buf; // Binary message buf, converted to a multidimentional array.
-
-// Enumerated message buffer.
+// Data buffers
+int *p_msg_buffer;
 int msg_buffer[BUFSIZ];
+int *p_tx_buffer;
+int tx_buffer[BUFSIZ][8];
 
-// Binary message buffer.
-double trans_buffer[BUFSIZ][8];
-
-double blank[8] = {2295.0,2295.0,2295.0,2295.0,2295.0,2295.0,2295.0,2295.0};
-
-void *inputLoop(void *threadid){
+void *input_loop(void *thread_id){
   while(running){
+
     fgets(cmd, sizeof(cmd), stdin);
 
-    // Remove newline/carrige return from input.
-    if((p = strchr(cmd, '\n')) != NULL){
-      *p = '\0';
+    // Replace newline/carrige return from input.
+    char *nl;
+    if((nl = strchr(cmd, '\n')) != NULL){
+      *nl = '\0';
     }
 
     // Quit application.
     if(strcmp(cmd, quit) == 0){
-
-      // Need to shutdown audio device.
-    	running = 0;
+      close_audio();
+      running = 0;
     }
 
-    // Print help.
-    else if(strcmp(cmd, help) == 0){
-      printf("help yo!\n");
-    }
-
-    // Transmit message.
-    else{
-
-      // Convert letters to baudot code.
-      baudot(cmd, msg_buf);
-
-      // Convert baudot code to binary, frequency mark and space.
-      parse(msg_buf, trs_buf);
-
-      has_data = 1;
-    }
+    msg_to_baudot(cmd, p_msg_buffer); // Convert the message chars to baudot.
+    baudot_to_fsk(p_msg_buffer, p_tx_buffer); // Convert baudot msg to FSK vals. 
+    has_data = 1;
   }
 
-  pthread_exit(NULL);
+  pthread_exit(0);
 }
 
-void transmitBlank(){
+void transmit_blank(){
   int bit = 0;
   while(bit < 8){
     write_wave(blank[bit]);
-    ++bit;
+    bit++;
   }
 }
 
-void transmitMessage(){
+void transmit_message(){
   int bit = 8;
-  int bit_count = *(trs_buf) * 8; // Total bits, letters times 8 (bytes)
+  int bit_count = *(tx_buffer) * 8; // Total bits to transmit.
   while(bit < bit_count){
-    write_wave(*(trs_buf + bit));
-    ++bit;
+    write_wave(*(tx_buffer + bit));
+    bit++;
   }
-
-  has_data = 0; // Finishes the message transimission.
 }
 
-void *transmitLoop(void *thread_id){
+void *tx_loop(void *thread_id){
   while(running){
-    switch(has_data){
-      case 0:
-        transmitBlank();
-        break;
-      case 1:
-        transmitMessage();
-        break;
-      default:
-        transmitBlank();
-        break;
+    printf("tx_loop\n");
+    system("sleep 1");
+
+    if(has_data > 0){
+      transmit_message();
+    }
+    else{
+      transmit_blank();
     }
   }
 
-  pthread_exit(NULL);
+  pthread_exit(0);
 }
 
 int main(int argc, char *argv[]){
 
-  // Get the handles for the message buffers.
-  msg_buf = msg_buffer;
-  trs_buf = &trans_buffer[0][0];
+  long t = 0;
+  void *status;
 
-  // Open audio channel.
-  if(open_audio() == 1){
-    running = 1;
-    long t = 0;
+  p_msg_buffer = &msg_buffer[0];
+  p_tx_buffer = &tx_buffer[0][0];
 
-    // User input thread.
-    int il_handle;
-    pthread_t il;
+  pthread_t input_thread;
+  pthread_t tx_thread;
 
-    // Transimission processing thread.
-    int tl_handle;
-    pthread_t tl;
-
-    il_handle = pthread_create(&il, NULL, inputLoop, (void *)t);
-    tl_handle = pthread_create(&tl, NULL, transmitLoop, (void *)t);
-
-    while(1){
-      if(running){
-      	//printf("%s\n", "running just fine");
-      	//return 0;
-      }
-      else{
-        printf("quitting...\n");
-        return 0;
-      }
-    }
-  }
-  else{
-    running = 0;
-    return 0;
+  if(open_audio() != 0){
+    perror("open_audio() error");
+    exit(1);
   }
 
-  return 0;
+  // Spawn the threads.
+  if(
+    pthread_create(&input_thread, NULL, input_loop, (void *)t) != 0 ||
+    pthread_create(&tx_thread, NULL, tx_loop, (void *)t) != 0
+  ){
+    perror("pthread_create() error");
+    exit(1);
+  }
+
+  // Wait for the threads to exit before finishing.
+  if(
+    pthread_join(input_thread, &status) != 0 ||
+    pthread_join(tx_thread, &status) != 0
+  ){
+    perror("pthread_join() error");
+    exit(3);
+  }
+
+  exit(0);
 }

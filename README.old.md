@@ -1,21 +1,3 @@
-## Technical Notes
-This was designed using the ALSA audio library.
-
-If you are in Ubuntu land you will need the ALSA dev libs:
-`$ sudo apt-get install libasound2`
-
-Some helpful commands to remember when probing your audio devices:
-`$ arecord -L`
-`$ aplay -l`
-`$ cat /proc/asound/<any item>`
-`$ ls /dev/snd`
-`$ lshw`
-`$ lspci`
-
-In the code (audio.c), during the set up for the audio device, you will need to specify which audio device to use. For a system with a single audio device "default" or "plughw:0,0" will be the name of the device to use on the system. A list of useable audio devices can be seen from the `arecord -L` command. (plughw:0,0 == plughw:<DEVICE:SUB_DEVICE>)
-
-This application also uses `pthreads`, which means the cpu should be multi core.
-
 ## To Compile
 gcc -Wall -lm txrtty.c audio.c -o txrtty -lasound -lpthread
 
@@ -26,9 +8,10 @@ This is some code I used a while ago to encode data for transmission over audio.
 ## RTTY table
 
 These tables represents the baudot rtty codes. The baudot code is a 5 bit code that represents 58 symbols. The symbols and bit code mappings are almost arbitrary. The original baudot mapping was based upon the visual look of the bits and the "qwerty" keyboard layout.
+
 The rtty broadcast of the baudot codes require 1 start bit and two stop bits. When you include these 3 bits to the 5 bit baudot code you end up with a nice 8 bit (byte) The structure of the new byte is 1 space bit (0), then the 5 bit baudot code, and ended with 2 mark bits (1). It would look a bit like this, 0XXXXX11 (where the X's are the baudot code) and is sorted by LSB.
 
-These new bytes map nicely to regular integer data types. The mapping to letters/symbols are based upon the "C" programming character set. These DO NOT map to the ascii or UTF char sets.
+These new bytes map nicely to regular integer data types. The mapping to letters/symbols are based upon the "C" programming character set. These DO NOT map to the ascii table (you are going to have to do that yourself).
 
 This first table is the standard baudot table mapping: !!! In LSB
 ```
