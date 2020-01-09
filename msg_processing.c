@@ -1,5 +1,7 @@
 #include "common.h"
 
+#include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 
 /*
@@ -40,12 +42,20 @@ int  figure_codes[] = {
 void msg_to_baudot(char msg[], int *p_msg_buffer){
   int a, b;
   int c = 1;
-  int shift = 0;
+  int shift = 2;
 
+/*
+  int d;
+  printf("%zu\n", strlen(msg));
+  for(d = 0; d < strlen(msg); d++){
+    printf("%c\n", toupper(msg[d])); 
+  }
+*/
   for(a = 0; a < strlen(msg); a++){
-    for(b = 0; b < sizeof(table_size); b++){
+    for(b = 0; b < table_size; b++){
 
-      if(msg[a] == letters[b]){
+      if(toupper(msg[a]) == letters[b]){
+        //printf("%c, %c", toupper(msg[a]), letters[b]);
         if(shift != 0){
           shift = 0;
           p_msg_buffer[c] = shift_to_letters;
@@ -57,7 +67,7 @@ void msg_to_baudot(char msg[], int *p_msg_buffer){
          break;
       }
 
-      if(msg[a] == figures[b]){
+      if(toupper(msg[a]) == figures[b]){
         if(shift != 1){
           shift = 1;
           p_msg_buffer[c] = shift_to_figures;

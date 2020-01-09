@@ -1,4 +1,4 @@
-#include "./common.h"
+#include "../common.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,10 +15,12 @@ void test_msg_processing(){
   msg_to_baudot(msg, p_msg_buffer);
 
   size_t baudot_size = sizeof(baudot) / sizeof(int);
+
   int a;
   for(a = 0; a < baudot_size; a++){
     printf("%d, %d\n", baudot[a], msg_buffer[a]); 
   }
+
 //  printf("%zu\n", baudot_size);
 }
 
