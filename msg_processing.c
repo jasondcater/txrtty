@@ -106,24 +106,22 @@ void msg_to_baudot(char msg[], int *p_msg_buffer){
  * the modulo of 2 from the decimal then divide that decimal by two and repeat.
  */
 void baudot_to_fsk(int *p_msg_buffer, int *p_tx_buffer){
-/*
-  p_tx_buffer[0][0] = p_msg_buffer[0]; // Set the msg size at the beginning.
+  *(p_tx_buffer) = p_msg_buffer[0]; // Set the msg size at the beginning.
   int a, bit = 0;
   int decimal;
 
-  for(a = 1; a < p_tx_buffer[0][0]; a++){
+  for(a = 1; a < *(p_tx_buffer); a++){
     decimal = p_msg_buffer[a];
     for(bit = 7; bit > 0; bit--){
       int bit_count = (a * 8) + bit;
       if(decimal%2){
-        *(p_tx_buffer + count) = mark;
+        *(p_tx_buffer + bit_count) = mark;
       }
       else{
-        *(p_tx_buffer + count) = space;
+        *(p_tx_buffer + bit_count) = space;
       }
 
       decimal /= 2;
     }
   }
-*/
 }
