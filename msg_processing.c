@@ -42,20 +42,23 @@ int  figure_codes[] = {
 void msg_to_baudot(char msg[], int *p_msg_buffer){
   int a, b;
   int c = 1;
-  int shift = 2;
 
-/*
-  int d;
-  printf("%zu\n", strlen(msg));
-  for(d = 0; d < strlen(msg); d++){
-    printf("%c\n", toupper(msg[d])); 
-  }
-*/
+  /*
+   * When we start the encoding sequence we need to set the code for a figure or
+   * character shift. We set a `-1` to force an initial shift on the first
+   * character.
+   */
+  int shift = -1;
+
+  /*
+   * For each character in the message we just loop the arrays and match the 
+   * correct code. We also get a count of characters in the message here as
+   * well.
+   */
   for(a = 0; a < strlen(msg); a++){
     for(b = 0; b < table_size; b++){
 
       if(toupper(msg[a]) == letters[b]){
-        //printf("%c, %c", toupper(msg[a]), letters[b]);
         if(shift != 0){
           shift = 0;
           p_msg_buffer[c] = shift_to_letters;
@@ -81,6 +84,7 @@ void msg_to_baudot(char msg[], int *p_msg_buffer){
     }
   }
 
+  // After we convert the message we add the `newline` code.
   switch(shift){
     case 0:
       p_msg_buffer[c] = letter_codes[29];
