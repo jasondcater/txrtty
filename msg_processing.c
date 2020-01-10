@@ -110,9 +110,10 @@ void baudot_to_fsk(int *p_msg_buffer, int *p_tx_buffer){
   int a, bit = 0;
   int decimal;
 
+  // Remeber, we reserve the first index for recording the message length.
   for(a = 1; a < *(p_tx_buffer); a++){
     decimal = p_msg_buffer[a];
-    for(bit = 7; bit > 0; bit--){
+    for(bit = 7; bit >= 0; bit--){
       int bit_count = (a * 8) + bit;
       if(decimal%2){
         *(p_tx_buffer + bit_count) = mark;
