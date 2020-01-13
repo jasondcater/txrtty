@@ -1,12 +1,13 @@
 CC = gcc
-CFLAGS = -Wall -lm -lasound -lpthread
+CFLAGS = -Wall -lm
+CLIBS = -lasound -lpthread
 TARGET = txrtty
 
 all: $(TARGET)
 
 $(TARGET): $(TARGET).c msg_procesing.c audio.c
-	$(CC) $(CFLAGS) -o ./bin/$(TARGET) $(TARGET).c msg_processing.c audio.c
+	$(CC) $(CFLAGS) -o ./bin/$(TARGET) $(TARGET).c msg_processing.c audio.c $(CLIBS)
 
 clean:
-	rm $(TARGET)
+	rm ./bin/*
 
