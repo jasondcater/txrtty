@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -lm -g
-CLIBS = -lasound -lpthread
+CFLAGS = -Wall -g
+CLIBS = -lm -lasound -lpthread
 
 msg_processing_test: msg_processing_test.c ../msg_processing.c
 	$(CC) $(CFLAGS) -o ./bin/msg_processing_test msg_processing_test.c ../msg_processing.c $(CLIBS)

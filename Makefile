@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -lm
-CLIBS = -lasound -lpthread
+CFLAGS = -Wall
+CLIBS = -lm -lasound -lpthread
 TARGET = txrtty
 
 all: $(TARGET)
