@@ -4,6 +4,8 @@
 #define M_PI 3.14159265358979323846
 #define DEVICE_ID "plughw:0,0" // "default" also works here.
 #define SAMPLE_RATE 48000.0
+#define NUM_CHANNELS 1
+#define BIT_DEPTH 16
 #define BAUD 1200.0
 
 // Audio device
@@ -12,11 +14,18 @@ snd_pcm_t *audio_device_handle;
 unsigned int latency = 500000; // In microseconds.
 
 // Sample generation
-double time_in_secs = 0.0; // Used in the calcuation of audio samples.
 double sample_length = 1.0/SAMPLE_RATE;
 double amplitude = 0.8;
-double sample_range = pow(2,16)/2; //16 bits divided by 2, 32768 to -32768
+double sample_range = pow(2,BIT_DEPTH)/2;
 double audio_buffer[64 * 1024];
+
+/*
+ * This is an accumulator that needs to roll over. Need to write logic for the
+ * roll over. Or better yet, figure out a mechanism where this isn't required.
+ * If this could be changed to phase we could have a rolling value from 0 to
+ * 2*M_PI
+ */
+double time_in_secs = 0.0; // Used in the calcuation of audio samples. 
 
 /*
  * Each character in a message to send will be comprised of 8 bits. In this AFSK
@@ -42,11 +51,19 @@ int open_audio(){
     return 1;
   }
 
+  /*
+   * There is an extensive list of output formats enumerated in ALSA. Since this
+   * program is fairly simple we will stick with 8 and 16 bit depths for now.
+   */
+  int audio_format = SND_PCM_FORMAT_U8;
+  if(BIT_DEPTH == 8) audio_format = SND_PCM_FORMAT_U8;
+  if(BIT_DEPTH == 16) audio_format = SND_PCM_FORMAT_U16_LE;
+
   err = snd_pcm_set_params(
     audio_device_handle,
-    SND_PCM_FORMAT_U8,
+    audio_format,
     SND_PCM_ACCESS_RW_INTERLEAVED,
-    1,
+    NUM_CHANNELS,
     SAMPLE_RATE,
     1,
     latency
@@ -74,6 +91,18 @@ void generate_sine(double hertz){
   }
 }
 
+/*
+// Writes the audio_buffer to disk as raw audio.
+void write_audio_file(){
+  write_audio_to_file(
+    audio_buffer,
+    data_size, // Data size in bytes.
+    (int)SAMPLE_RATE,
+    (short int)NUM_CHANNELS,
+    (short int)BIT_DEPTH
+  ); 
+}
+*/
 /*
 // Takes a frequency and then loads a buffer with generated square wave data.
 void generate_square(double hertz){
