@@ -1,7 +1,9 @@
 #include <alsa/asoundlib.h>
 #include <math.h>
+#include <stdint.h>
 
 #define M_PI 3.14159265358979323846
+#define M_TAU 6.283185307179586 
 #define DEVICE_ID "plughw:0,0" // "default" also works here.
 #define SAMPLE_RATE 48000.0
 #define NUM_CHANNELS 1
@@ -11,33 +13,24 @@
 // Audio device
 snd_output_t *output = NULL;
 snd_pcm_t *audio_device_handle;
-unsigned int latency = 500000; // In microseconds.
+uint32_t latency = 500000; // In microseconds.
 
 // Sample generation
 double sample_length = 1.0/SAMPLE_RATE;
 double amplitude = 0.8;
-double sample_range = pow(2,BIT_DEPTH)/2;
-double audio_buffer[64 * 1024];
+uint8_t audio_buffer[64 * 1024]; // Currently set at 64K
 
 /*
- * This is an accumulator that needs to roll over. Need to write logic for the
- * roll over. Or better yet, figure out a mechanism where this isn't required.
- * If this could be changed to phase we could have a rolling value from 0 to
- * 2*M_PI
+ * As we generate wave forms we want to keep the last angle/phase we calculated.
+ * When we start a new round of calcuations we just pick up from the angle of
+ * the previous set. When we generate wave forms back to back this prevents
+ * "clipping" between the wave forms since each new wave form doens't start from
+ * zero, but from the last calcuated value.
  */
-double time_in_secs = 0.0; // Used in the calcuation of audio samples. 
+double theta = 0.0;
 
-/*
- * Each character in a message to send will be comprised of 8 bits. In this AFSK
- * encoding schema high and low bits are encoded to high and low frequencies set
- * at 170 hertz appart (see msg_processing.c). When we convert these mark/space
- * values to audio samples we need to know how many samples per mark/space to
- * generate.
- */
-int samples_per_mark = SAMPLE_RATE/BAUD;
-
-int open_audio(){
-  int err;
+uint32_t open_audio(){
+  uint32_t err;
 
   err = snd_pcm_open(
     &audio_device_handle,
@@ -55,7 +48,7 @@ int open_audio(){
    * There is an extensive list of output formats enumerated in ALSA. Since this
    * program is fairly simple we will stick with 8 and 16 bit depths for now.
    */
-  int audio_format = SND_PCM_FORMAT_U8;
+  uint32_t audio_format = SND_PCM_FORMAT_U8;
   if(BIT_DEPTH == 8) audio_format = SND_PCM_FORMAT_U8;
   if(BIT_DEPTH == 16) audio_format = SND_PCM_FORMAT_U16_LE;
 
@@ -81,39 +74,40 @@ void close_audio(){
   snd_pcm_close(audio_device_handle);
 }
 
-// Takes a frequency and then loads a buffer with generated sine wave data.
-void generate_sine(double hertz){
-  double cycles_per_sec = (360.0 * hertz)/(180.0/M_PI);
-  for(int a = 0; a < samples_per_mark; a++){
-    double sample = (amplitude*sin(cycles_per_sec*time_in_secs))*sample_range;
-    time_in_secs = time_in_secs + sample_length;
+/*
+ * Each character in a message to send will be comprised of 8 bits. In this AFSK
+ * encoding schema high and low bits are encoded to high and low frequencies set
+ * at 170 hertz appart (see msg_processing.c). When we convert these mark/space
+ * values to audio samples we need to know how many samples per mark/space to
+ * generate.
+ *
+ * To prevent the accumulation (and possible overflow) of our theta value we can
+ * simply take the modulus of tau.
+ */
+void generate_sine(double frequency){
+  double radian_per_sample = (frequency / SAMPLE_RATE) * M_TAU;
+
+  for(uint32_t a = 0; a < (SAMPLE_RATE / BAUD); a++){
+    theta = fmod((theta + radian_per_sample), M_TAU);
+    double sample = amplitude * sin(theta);
     audio_buffer[a] = sample;
   }
 }
-
 /*
 // Writes the audio_buffer to disk as raw audio.
 void write_audio_file(){
   write_audio_to_file(
     audio_buffer,
     data_size, // Data size in bytes.
-    (int)SAMPLE_RATE,
-    (short int)NUM_CHANNELS,
-    (short int)BIT_DEPTH
+    (uint32_t)SAMPLE_RATE,
+    (uint16_t)NUM_CHANNELS,
+    (uint16_t)BIT_DEPTH
   ); 
-}
-*/
-/*
-// Takes a frequency and then loads a buffer with generated square wave data.
-void generate_square(double hertz){
-  double cycles_per_sec = (360.0 * hertz)/(180.0/M_PI);
-}
+}*/
 
+/*
 // Writes the wave buffer to the audio device.
 void write_wave(){
 
 }
 */
-
-
-
