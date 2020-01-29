@@ -58,7 +58,7 @@ wav_header make_wav_header(
   header.fmt[0] = 'f';
   header.fmt[1] = 'm';
   header.fmt[2] = 't';
-  header.fmt[3] = '\0';
+  header.fmt[3] = ' ';
 
   /*
    * The size, in bytes, of the header up to this point.
