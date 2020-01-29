@@ -16,7 +16,7 @@
  * );
  */
 
-void reverse_endianness(uint64_t data_size, uint8_t width, uint8_t *data){
+void reverse_endian(uint64_t data_size, uint8_t width, uint8_t *data){
   uint64_t a, index, offset = 0;
   uint8_t buffer[data_size]; // Holds a copy of the data to be reversed.
 
@@ -30,4 +30,10 @@ void reverse_endianness(uint64_t data_size, uint8_t width, uint8_t *data){
     if(!((a + 1) % width)) offset++;
     data[a] = buffer[index];
   }
+}
+
+int is_big_endian(){
+  uint32_t test = 1;
+  uint8_t *p = (uint8_t *)&test;
+  return p[0] == 0;
 }
