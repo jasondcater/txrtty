@@ -31,11 +31,8 @@ uint64_t n_samples = 0;
  * the previous set. When we generate wave forms back to back this prevents
  * "clipping" between the wave forms since each new wave form doens't start from
  * zero, but from the last calcuated value.
- *
- * We start theta off at 270 deg (3/4 tau) because we will shift the "ground" of
- * the waveform up from (-0.5 to 0.5) to (0.0 to 1.0).
  */
-double theta = M_TAU * (3.0/4.0);
+double theta = 0;
 
 uint32_t check_bit_depth(){
   if(BIT_DEPTH == 8 || BIT_DEPTH == 16) return 0;
@@ -121,7 +118,7 @@ uint32_t generate_sine(double frequency){
 
   for(uint32_t a = 0; a < (SAMPLE_RATE / BAUD); a++){
     theta = fmod((theta + radian_per_sample), M_TAU);
-    double float_sample = ((amplitude / 2.0) * sin(theta)) + (amplitude / 2.0);
+    double float_sample = amplitude * sin(theta);
 
 		/*
      * Convert a precision float representation of a sample to an interger 
@@ -129,13 +126,13 @@ uint32_t generate_sine(double frequency){
 		 */
 
     if(BIT_DEPTH == 8){
-      uint8_t int_sample = (uint8_t)(float_sample * (double)UINT8_MAX);
+      int8_t int_sample = (int8_t)(float_sample * (double)INT8_MAX);
       audio_buffer[a] = int_sample;
       size += 1;
     }
 
     if(BIT_DEPTH == 16){
-      uint16_t int_sample = (uint16_t)(float_sample * (double)UINT16_MAX);
+      int16_t int_sample = (int16_t)(float_sample * (double)INT16_MAX);
       audio_buffer[a*2] = int_sample & 0xff;
       audio_buffer[(a*2)+1] = (int_sample >> 8);
       size += 2;
