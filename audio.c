@@ -1,3 +1,5 @@
+#include "./common.h"
+
 #include <alsa/asoundlib.h>
 #include <math.h>
 #include <float.h>
@@ -142,7 +144,7 @@ uint32_t generate_sine(double frequency){
 
   return 0;
 }
-/*
+
 // Writes the audio_buffer to disk as raw audio.
 void write_audio_file(){
   write_audio_to_file(
@@ -153,7 +155,7 @@ void write_audio_file(){
     (uint16_t)BIT_DEPTH
   ); 
 }
-*/
+
 /*
 // Writes the wave buffer to the audio device.
 void write_wave(){
