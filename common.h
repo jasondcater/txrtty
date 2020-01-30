@@ -18,7 +18,7 @@ void write_audio_to_file(
 );
 
 // audio.c
-uint32_t open_audio();
+int64_t open_audio();
 void close_audio();
-uint32_t generate_sine(double hertz);
+int64_t generate_sine(double hertz);
 void write_audio_file();
