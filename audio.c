@@ -34,23 +34,23 @@ uint64_t n_samples = 0;
  */
 double theta = 0;
 
-uint32_t check_bit_depth(){
+int32_t check_bit_depth(){
   if(BIT_DEPTH == 8 || BIT_DEPTH == 16) return 0;
-  return 1;
+  return -1;
 }
 
-uint32_t check_amplitude(){
-	if(amplitude >= 0.0 && amplitude <= 1.0) return 0;
-  return 1;
+int32_t check_amplitude(){
+  if(amplitude >= 0.0 && amplitude <= 1.0) return 0;
+  return -1;
 }
 
-uint32_t open_audio(){
+int64_t open_audio(){
   if(check_bit_depth()){
     printf("open_audio() error, wrong BIT_DEPTH set.\n");
-    return 1;
+    return -1;
   }
 
-  uint32_t err;
+  int32_t err;
   err = snd_pcm_open(
     &audio_device_handle,
     DEVICE_ID,
@@ -60,7 +60,7 @@ uint32_t open_audio(){
 
   if(err < 0){
     printf("Playback open error: %s\n", snd_strerror(err));
-    return 1;
+    return -1;
   }
 
   /*
@@ -83,7 +83,7 @@ uint32_t open_audio(){
 
   if(err < 0){
     printf("Playback open error: %s\n", snd_strerror(err));
-    return 1;
+    return -1;
   }
 
   return 0;
@@ -103,15 +103,15 @@ void close_audio(){
  * To prevent the accumulation (and possible overflow) of our theta value we can
  * simply take the modulus of tau.
  */
-uint32_t generate_sine(double frequency){
-  if(check_bit_depth()){
+int64_t generate_sine(double frequency){
+  if(check_bit_depth() < 0){
     printf("generate_sine() error, wrong 'BIT_DEPTH' set.\n");
-    return 1;
+    return -1;
   }
 
-  if(check_amplitude()){
+  if(check_amplitude() < 0){
     printf("generate_sine() error, wrong 'amplitude' set.\n");
-    return 1;
+    return -1;
   }
 
   double radian_per_sample = (frequency / SAMPLE_RATE) * M_TAU;
@@ -119,11 +119,10 @@ uint32_t generate_sine(double frequency){
   for(uint32_t a = 0; a < (SAMPLE_RATE / BAUD); a++){
     theta = fmod((theta + radian_per_sample), M_TAU);
     double float_sample = amplitude * sin(theta);
-
-		/*
+    /*
      * Convert a precision float representation of a sample to an interger 
-		 * representation of the correct bit depth.
-		 */
+     * representation of the correct bit depth.
+     */
 
     if(BIT_DEPTH == 8){
       int8_t int_sample = (int8_t)(float_sample * (double)INT8_MAX);
@@ -139,7 +138,7 @@ uint32_t generate_sine(double frequency){
     }
   }
 
-  return 0;
+  return (int64_t)&audio_buffer;
 }
 
 // Writes the audio_buffer to disk as raw audio.
