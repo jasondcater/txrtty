@@ -128,10 +128,11 @@ void set_wav_to_file(wav *audio_wav, const uint8_t *file_name){
   //if(is_big_endian()) reverse_header_endian(audio_wav);
 
   FILE *file;
-  file = fopen((char *)file_name, "wb");
-  fwrite(&(audio_wav->header), sizeof(wav_header), 1, file);
-  fwrite((void *)(audio_wav->data), sizeof(uint8_t), audio_wav->size, file);
-  fclose(file);
+  if((file = fopen((char *)file_name, "wb")) != NULL){
+    fwrite(&(audio_wav->header), sizeof(wav_header), 1, file);
+    fwrite((void *)(audio_wav->data), sizeof(uint8_t), audio_wav->size, file);
+    fclose(file);
+  }
 }
 
 void write_audio_to_file(
