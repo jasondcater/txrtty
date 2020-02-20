@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 // msg_processing.c
-void msg_to_baudot(uint8_t msg[], uint32_t *p_msg_buffer);
+void msg_to_baudot(const char *msg, uint32_t *p_msg_buffer);
 void baudot_to_fsk(uint32_t *p_msg_buffer, uint32_t *p_tx_buffer);
 
 // binary_utils.c

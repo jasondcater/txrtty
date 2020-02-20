@@ -1,6 +1,7 @@
 #include "common.h"
 
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <string.h>
 
@@ -9,46 +10,46 @@
  * high bit and a space will map to a low bit. For now these are hard set, but
  * in the future will be pulled from a config file.
  */
-int mark = 2295;
-int space = 2125;
+uint32_t mark = 2295;
+uint32_t space = 2125;
 
 // Baudot to RTTY tables. See the README.md for an explination on these arrays.
-int table_size = 30;
-int shift_to_letters = 127;
+uint32_t table_size = 30;
+uint32_t shift_to_letters = 127;
 
-char letters[] = {
+uint8_t letters[] = {
   '\0', ' ', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D',
   'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '\r', '\n'
 };
 
-int  letter_codes[] = {
+uint32_t letter_codes[] = {
   2, 19, 118, 103, 67, 42, 7, 87, 115, 50, 14, 55, 98, 82, 74, 91, 47, 22, 107,
   122, 38, 70, 94, 59, 62, 78, 26, 31, 11, 35
 };
 
-int  shift_to_figures = 110;
+uint32_t shift_to_figures = 110;
 
-char figures[] = {
+uint8_t figures[] = {
   '\0', ' ', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '\a', '$',
   '!', '&', '#', '\'', '(', ')', '\"', '/', ':', ';', '\?', ',', '.', '\r',
   '\n'
 };
 
-int  figure_codes[] = {
+uint32_t figure_codes[] = {
   2, 19, 94, 79, 7, 42, 67, 87, 31, 26, 98, 91, 14, 22, 38, 55, 107, 82, 47,
   62, 74, 70, 118, 59, 122, 103, 50, 115, 35, 11
 };
 
-void msg_to_baudot(char msg[], int *p_msg_buffer){
-  int a, b;
-  int c = 1;
+void msg_to_baudot(const char *msg, uint32_t *p_msg_buffer){
+  uint32_t a, b;
+  uint32_t c = 1;
 
   /*
    * When we start the encoding sequence we need to set the code for a figure or
    * character shift. We set a `-1` to force an initial shift on the first
    * character.
    */
-  int shift = -1;
+  uint32_t shift = -1;
 
   /*
    * For each character in the message we just loop the arrays and match the 
@@ -105,16 +106,16 @@ void msg_to_baudot(char msg[], int *p_msg_buffer){
  * To convert a decimal to an encoded binary sequence of marks and spaces we get
  * the modulo of 2 from the decimal then divide that decimal by two and repeat.
  */
-void baudot_to_fsk(int *p_msg_buffer, int *p_tx_buffer){
+void baudot_to_fsk(uint32_t *p_msg_buffer, uint32_t *p_tx_buffer){
   *(p_tx_buffer) = p_msg_buffer[0]; // Set the msg size at the beginning.
-  int a, bit = 0;
-  int decimal;
+  uint32_t a, bit = 0;
+  uint32_t decimal;
 
   // Remeber, we reserve the first index for recording the message length.
   for(a = 1; a < *(p_tx_buffer); a++){
     decimal = p_msg_buffer[a];
     for(bit = 7; bit >= 0; bit--){
-      int bit_count = (a * 8) + bit;
+      uint32_t bit_count = (a * 8) + bit;
       if(decimal%2){
         *(p_tx_buffer + bit_count) = mark;
       }
