@@ -107,7 +107,7 @@ void set_wav_attributes(
 }
 
 void set_wav_data(wav *audio_wav, uint8_t *audio_buffer, uint32_t data_size){
-  for(uint32_t a = 0; a < data_size; a++){
+  for(int32_t a = 0; a < data_size; a++){
     audio_wav->data[a] = audio_buffer[a];
   }
 }

@@ -73,14 +73,14 @@ void test_baudot_to_fsk(){
   p_msg_buffer = &msg_buffer[0];
   p_tx_buffer = &tx_buffer[0][0];
 
-  uint32_t a;
+  int32_t a;
   for(a = 0; a < baudot[0]; a++){
     p_msg_buffer[a] = baudot[a];
   }
 
   baudot_to_fsk(p_msg_buffer, p_tx_buffer);
 
-  uint32_t b, c;
+  int32_t b, c;
   for(b = 0; b < baudot[0]; b++){
     for(c = 0; c < 8; c++){
       if(fsk[b][c] != tx_buffer[b][c]){

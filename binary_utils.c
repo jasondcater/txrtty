@@ -17,7 +17,8 @@
  */
 
 void reverse_endian(uint64_t data_size, uint8_t width, uint8_t *data){
-  uint64_t a, index, offset = 0;
+  int64_t a;
+  uint64_t index, offset = 0;
   uint8_t buffer[data_size]; // Holds a copy of the data to be reversed.
 
   // Write the value to be copied into the buffer.

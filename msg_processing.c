@@ -41,7 +41,7 @@ uint32_t figure_codes[] = {
 };
 
 void msg_to_baudot(const char *msg, uint32_t *p_msg_buffer){
-  uint32_t a, b;
+  int32_t a, b;
   uint32_t c = 1;
 
   /*
