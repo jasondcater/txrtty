@@ -108,7 +108,7 @@ void msg_to_baudot(const char *msg, uint32_t *p_msg_buffer){
  */
 void baudot_to_fsk(uint32_t *p_msg_buffer, uint32_t *p_tx_buffer){
   *(p_tx_buffer) = p_msg_buffer[0]; // Set the msg size at the beginning.
-  uint32_t a, bit = 0;
+  int32_t a, bit = 0;
   uint32_t decimal;
 
   // Remeber, we reserve the first index for recording the message length.
